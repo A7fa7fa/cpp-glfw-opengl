@@ -4,22 +4,22 @@
 
 int main(int argc, char** argv) {
 
-	int res = glfwInit();
-	if (res == GLFW_FALSE) {
-		std::cout << "Could not init glfw" << std::endl;
-		return -1;
-	}
+    int res = glfwInit();
+    if (res == GLFW_FALSE) {
+        std::cout << "Could not init glfw" << std::endl;
+        return -1;
+    }
 
-	std::cout << "Glfw initilazed " << res << std::endl;
+    std::cout << "Glfw initilazed " << res << std::endl;
 
-	GLFWwindow* window = glfwCreateWindow(640, 480, "my title", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(640, 480, "my title", nullptr, nullptr);
     if(!window)
     {
         glfwTerminate();
         return -1;
     }
 
-	std::cout << "Window created" << std::endl;
+    std::cout << "Window created" << std::endl;
 
     glfwMakeContextCurrent(window);
 
@@ -31,10 +31,10 @@ int main(int argc, char** argv) {
         glfwPollEvents();
     }
 
-	// charArray();
-	// stdString();
+    // charArray();
+    // stdString();
 
-	glfwTerminate();
+    glfwTerminate();
 
-	return 0;
+    return 0;
 }
