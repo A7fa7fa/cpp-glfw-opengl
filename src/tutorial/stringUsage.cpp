@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
+#include "stringUsage.h"
 
-void charArray() {
+void tutorial::charArray() {
 
     const char* name = "my name"; // char string array. pointer points to start of string
     std::cout << name << std::endl;
@@ -20,7 +21,7 @@ void charArray() {
     std::cout << name2 << std::endl;
 };
 
-void stdString() {
+void tutorial::stdString() {
 
     std::string name = "manuel";
     std::cout << name << name.size() << std::endl;
@@ -31,3 +32,4 @@ void stdString() {
     std::string var = std::string("manuel") + "Hello!";
     std::cin.get();
 };
+
