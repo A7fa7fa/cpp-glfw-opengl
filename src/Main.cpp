@@ -1,5 +1,5 @@
 #include "pre.h"
-#include "tutorial/stringUsage.h"
+#include <math.h>
 
 void initConsole() {
     // Allocate a new console
@@ -30,6 +30,14 @@ int main(int argc, char** argv) {
 
     std::cout << "Glfw initilazed " << std::endl;
 
+    // define used opengl version
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // no backwards compatible
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // allow compatible
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window) {
@@ -40,8 +48,14 @@ int main(int argc, char** argv) {
     }
     std::cout << "Window created" << std::endl;
 
-    /* Make the window's context current */
+    int bufferWidth, bufferHeight;
+    glfwGetFramebufferSize(window, &bufferWidth, &bufferHeight);
+
+    // Make the window's context current. set context for glfw to use
     glfwMakeContextCurrent(window);
+
+    // allow modern extension features - optional
+    glewExperimental = GL_TRUE;
 
     // can only be used after a valid context is present
     // GLenum err = glewInit();
@@ -51,25 +65,30 @@ int main(int argc, char** argv) {
         FreeConsole();
         return -1;
     }
-    fprintf(stdout, "out");
 
-    std::cout << std::flush;
+    // set size to draw to
+    glViewport(0, 0, bufferWidth, bufferHeight);
 
-    /* Loop until the user closes the window */
+    // set used clear color when used glClear
+    glClearColor(0.5f, 0.3f, 1.0f, 0.0f);
+
+    float red = 0.02f;
+    // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
-        /* Render here */
+        red += 0.02f;
+        glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
+
+        // Render here
+        // specify what to clear using defined clear color
         glClear(GL_COLOR_BUFFER_BIT);
 
-        /* Swap front and back buffers */
+        // Swap front and back buffers
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+        // Poll for and process events
         glfwPollEvents();
 
     }
-
-    tutorial::charArray();
-    tutorial::stdString();
 
     glfwTerminate();
 
