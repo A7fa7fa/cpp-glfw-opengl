@@ -21,6 +21,8 @@ int main(int argc, char** argv) {
 
     GLFWwindow* window;
 
+    glfwSetErrorCallback(glfw_error_callback);
+
     /* Initialize the library */
     if (!glfwInit()) {
         std::cout << "Could not init glfw" << std::endl;
@@ -50,6 +52,8 @@ int main(int argc, char** argv) {
 
     int bufferWidth, bufferHeight;
     glfwGetFramebufferSize(window, &bufferWidth, &bufferHeight);
+    // resizes viewport size on window siz change
+    glfwSetFramebufferSizeCallback(window, glfw_framebuffer_size_callback);
 
     // Make the window's context current. set context for glfw to use
     glfwMakeContextCurrent(window);
@@ -73,14 +77,32 @@ int main(int argc, char** argv) {
     glClearColor(0.5f, 0.3f, 1.0f, 0.0f);
 
     float red = 0.02f;
+
+    std::vector<DrawDetails> drawDetails;
+    drawDetails.reserve(1);
+    {
+        std::vector<Vertex> trianglePoints;
+        trianglePoints.reserve(3);
+        trianglePoints.emplace_back(.5f, -.5f, 0.f);
+        trianglePoints.emplace_back(-.5f, -.5f, 0.f);
+        trianglePoints.emplace_back(0.f, .5f, 0.f);
+
+        std::vector<uint32_t> triangleMesh = {0, 1, 2};
+
+        drawDetails.emplace_back(uploadMesh(trianglePoints, triangleMesh));
+    }
+
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
-        red += 0.02f;
-        glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
+        processInput(window);
 
-        // Render here
-        // specify what to clear using defined clear color
+        // red += 0.02f;
+        // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
+
+        // clear screen. specify what to clear using defined clear color
         glClear(GL_COLOR_BUFFER_BIT);
+        // Render here
+        draw(drawDetails);
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
@@ -89,6 +111,9 @@ int main(int argc, char** argv) {
         glfwPollEvents();
 
     }
+
+    // not strictly neccessary here because programm cleans up after termination
+    unloadMesh(drawDetails);
 
     glfwTerminate();
 
