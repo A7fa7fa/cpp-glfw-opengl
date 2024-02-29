@@ -5,6 +5,13 @@ Vertex::Vertex(float x, float y, float z) {
     this->pos[0] = x;
     this->pos[1] = y;
     this->pos[2] = z;
+    this->setColor(0, 0, 0, 255);
+}
+Vertex::Vertex(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b, unsigned char a){
+    this->pos[0] = x;
+    this->pos[1] = y;
+    this->pos[2] = z;
+    this->setColor(r, g, b, a);
 }
 
 Vertex::Vertex() {
@@ -18,8 +25,17 @@ Vertex::Vertex(const Vertex& vertex) {
     std::cout << "copied vert" << std::endl;
 }
 
-DrawDetails::DrawDetails(uint32_t v, uint32_t e) {
-    this->vao = v;
+void Vertex::setColor(unsigned char r, unsigned char g, unsigned char b,unsigned char a) {
+    this->color[0] = r / 255.0;
+    this->color[1] = g / 255.0;
+    this->color[2] = b / 255.0;
+    this->color[3] = a / 255.0;
+}
+
+
+DrawDetails::DrawDetails(unsigned int vao, unsigned int vbo, unsigned int e) {
+    this->vao = vao;
+    this->vbo = vbo;
     this->numElements = e;
 }
 

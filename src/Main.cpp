@@ -1,5 +1,7 @@
 #include "pre.h"
 #include <math.h>
+#include <fstream>
+#include <sstream>
 
 void initConsole() {
     // Allocate a new console
@@ -13,6 +15,38 @@ void initConsole() {
     freopen("CONOUT$", "w", stdout);
     freopen("CONOUT$", "w", stderr);
 
+}
+
+struct ShaderProgramSource {
+    std::string vertexSource;
+    std::string fragmentSource;
+};
+
+static ShaderProgramSource parseShader(const std::string& filePath) {
+    enum class ShaderType {
+        NONE = -1, VERTEX = 0, FRAGMENT = 1
+    };
+    const char* shaderTypeName[2] = {"vertex", "fragment"};
+
+    std::fstream stream(filePath); // this opens file
+
+    std::string line;
+    std::stringstream ss[2]; // create two stringstreams. one fro fragment, one for vertex shader
+    ShaderType currType = ShaderType::NONE;
+    while(getline(stream, line)) {
+        if (line.find("#shader") != std::string::npos) { // npos is not a valid position so find was not successfull
+            if (line.find(shaderTypeName[(int)ShaderType::VERTEX]) != std::string::npos) {
+                currType = ShaderType::VERTEX;
+            } else if (line.find(shaderTypeName[(int)ShaderType::FRAGMENT]) != std::string::npos) {
+                currType = ShaderType::FRAGMENT;
+            } else {
+                currType = ShaderType::NONE;
+            }
+        } else {
+            ss[(int)currType] << line << '\n';
+        }
+    }
+    return {ss[0].str(), ss[1].str()};
 }
 
 int main(int argc, char** argv) {
@@ -33,8 +67,8 @@ int main(int argc, char** argv) {
     std::cout << "Glfw initilazed " << std::endl;
 
     // define used opengl version
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     // no backwards compatible
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // allow compatible
@@ -70,6 +104,13 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // enable debug messages
+    glEnable(GL_DEBUG_OUTPUT);
+    // register gl error callback function
+    glDebugMessageCallback(opengl_debug_message_callback, nullptr);
+    // to enable all types of debug messages
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+
     // set size to draw to
     glViewport(0, 0, bufferWidth, bufferHeight);
 
@@ -80,17 +121,34 @@ int main(int argc, char** argv) {
 
     std::vector<DrawDetails> drawDetails;
     drawDetails.reserve(1);
+    Vertex vert = Vertex(0.5f, -0.5f, 0.0f);
     {
         std::vector<Vertex> trianglePoints;
-        trianglePoints.reserve(3);
-        trianglePoints.emplace_back(.5f, -.5f, 0.f);
-        trianglePoints.emplace_back(-.5f, -.5f, 0.f);
-        trianglePoints.emplace_back(0.f, .5f, 0.f);
+        trianglePoints.reserve(4);
+        trianglePoints.emplace_back(vert);
+        trianglePoints.emplace_back(-0.5f, -0.5f, 0.0f, 0, 255, 0, 255);
+        trianglePoints.emplace_back( 0.0f,  0.5f, 0.0f, 0, 0, 255, 255);
+        trianglePoints.emplace_back( 1.0f,  0.5f, 0.0f, 0, 0, 0, 255);
 
-        std::vector<uint32_t> triangleMesh = {0, 1, 2};
+        std::vector<unsigned int> triangleMesh = {0, 1, 2, 0, 1, 3};
 
         drawDetails.emplace_back(uploadMesh(trianglePoints, triangleMesh));
     }
+
+
+    ShaderProgramSource source = parseShader("res/shaders/basiccolor.shader");
+    std::cout << "Vertex..." << std::endl;
+    std::cout << source.vertexSource << std::endl;
+    std::cout << "Fragment..." << std::endl;
+    std::cout << source.fragmentSource << std::endl;
+
+    unsigned int shader = createShader(source.vertexSource, source.fragmentSource);
+    if (!shader) {
+        std::cout << "Could not compile shader" << std::endl;
+        std::cin.get();
+        return -1;
+    }
+    glUseProgram(shader);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
@@ -98,6 +156,8 @@ int main(int argc, char** argv) {
 
         // red += 0.02f;
         // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
+        vert.pos[0] += fmod((vert.pos[0] + 0.02f), 1);
+        updateBuffer(vert, 0, drawDetails.at(0) );
 
         // clear screen. specify what to clear using defined clear color
         glClear(GL_COLOR_BUFFER_BIT);
@@ -109,11 +169,11 @@ int main(int argc, char** argv) {
 
         // Poll for and process events
         glfwPollEvents();
-
     }
 
     // not strictly neccessary here because programm cleans up after termination
     unloadMesh(drawDetails);
+    glDeleteProgram(shader);
 
     glfwTerminate();
 
