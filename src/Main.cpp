@@ -121,22 +121,24 @@ int main(int argc, char** argv) {
 
     std::vector<DrawDetails> drawDetails;
     drawDetails.reserve(1);
-    Vertex vert = Vertex(0.5f, -0.5f, 0.0f);
     {
         std::vector<Vertex> trianglePoints;
-        trianglePoints.reserve(4);
-        trianglePoints.emplace_back(vert);
-        trianglePoints.emplace_back(-0.5f, -0.5f, 0.0f, 0, 255, 0, 255);
-        trianglePoints.emplace_back( 0.0f,  0.5f, 0.0f, 0, 0, 255, 255);
-        trianglePoints.emplace_back( 1.0f,  0.5f, 0.0f, 0, 0, 0, 255);
+        trianglePoints.reserve(5);
+        trianglePoints.emplace_back( 0.5f, -0.5f, 0.0f, 150,  50,  20, 255);
+        trianglePoints.emplace_back(-0.5f, -0.5f, 0.0f,   0, 255,   0, 255);
+        trianglePoints.emplace_back( 0.0f,  0.5f, 0.0f,   0,   0, 255, 255);
+        trianglePoints.emplace_back( 1.0f, -1.0f, 0.0f, 255,   0,   0, 255);
+        trianglePoints.emplace_back(-1.0f, -1.0f, 0.0f,   0,   0,   0, 255);
 
-        std::vector<unsigned int> triangleMesh = {0, 1, 2, 0, 1, 3};
+        std::vector<unsigned int> triangleMesh = {0, 1, 2, 0, 1, 3, 4, 3, 1};
 
         drawDetails.emplace_back(uploadMesh(trianglePoints, triangleMesh));
     }
 
 
-    ShaderProgramSource source = parseShader("res/shaders/basiccolor.shader");
+    // ShaderProgramSource source = parseShader("res/shaders/basiccolor.shader");
+    // ShaderProgramSource source = parseShader("res/shaders/basic.shader");
+    ShaderProgramSource source = parseShader("res/shaders/basicuniform.shader");
     std::cout << "Vertex..." << std::endl;
     std::cout << source.vertexSource << std::endl;
     std::cout << "Fragment..." << std::endl;
@@ -149,6 +151,11 @@ int main(int argc, char** argv) {
         return -1;
     }
     glUseProgram(shader);
+    int uniforrmLocation = glGetUniformLocation(shader, "u_Color");
+    if (uniforrmLocation == -1) {
+        std::cout << "Uniform not found" << std::endl;
+    }
+    glUniform4f(uniforrmLocation, 1.0, 0.8, 0.25, 1.0);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
@@ -156,8 +163,8 @@ int main(int argc, char** argv) {
 
         // red += 0.02f;
         // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
-        vert.pos[0] += fmod((vert.pos[0] + 0.02f), 1);
-        updateBuffer(vert, 0, drawDetails.at(0) );
+        // vert.pos[0] += fmod((vert.pos[0] + 0.02f), 1);
+        // updateBuffer(vert, 0, drawDetails.at(0) );
 
         // clear screen. specify what to clear using defined clear color
         glClear(GL_COLOR_BUFFER_BIT);

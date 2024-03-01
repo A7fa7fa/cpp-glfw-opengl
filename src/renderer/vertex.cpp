@@ -6,7 +6,9 @@ Vertex::Vertex(float x, float y, float z) {
     this->pos[1] = y;
     this->pos[2] = z;
     this->setColor(0, 0, 0, 255);
+    std::cout << "pos vert constructor used" << std::endl;
 }
+
 Vertex::Vertex(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b, unsigned char a){
     this->pos[0] = x;
     this->pos[1] = y;
@@ -25,7 +27,7 @@ Vertex::Vertex(const Vertex& vertex) {
     std::cout << "copied vert" << std::endl;
 }
 
-void Vertex::setColor(unsigned char r, unsigned char g, unsigned char b,unsigned char a) {
+void Vertex::setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
     this->color[0] = r / 255.0;
     this->color[1] = g / 255.0;
     this->color[2] = b / 255.0;
