@@ -2,6 +2,8 @@
 #include <math.h>
 #include <fstream>
 #include <sstream>
+#include "renderer/Renderer.h"
+#include "renderer/shader.h"
 
 void initConsole() {
     // Allocate a new console
@@ -17,37 +19,6 @@ void initConsole() {
 
 }
 
-struct ShaderProgramSource {
-    std::string vertexSource;
-    std::string fragmentSource;
-};
-
-static ShaderProgramSource parseShader(const std::string& filePath) {
-    enum class ShaderType {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
-    };
-    const char* shaderTypeName[2] = {"vertex", "fragment"};
-
-    std::fstream stream(filePath); // this opens file
-
-    std::string line;
-    std::stringstream ss[2]; // create two stringstreams. one fro fragment, one for vertex shader
-    ShaderType currType = ShaderType::NONE;
-    while(getline(stream, line)) {
-        if (line.find("#shader") != std::string::npos) { // npos is not a valid position so find was not successfull
-            if (line.find(shaderTypeName[(int)ShaderType::VERTEX]) != std::string::npos) {
-                currType = ShaderType::VERTEX;
-            } else if (line.find(shaderTypeName[(int)ShaderType::FRAGMENT]) != std::string::npos) {
-                currType = ShaderType::FRAGMENT;
-            } else {
-                currType = ShaderType::NONE;
-            }
-        } else {
-            ss[(int)currType] << line << '\n';
-        }
-    }
-    return {ss[0].str(), ss[1].str()};
-}
 
 int main(int argc, char** argv) {
 
@@ -69,7 +40,7 @@ int main(int argc, char** argv) {
     // define used opengl version
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    // no backwards compatible
+    // no backwards compatible - need of vao
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // allow compatible
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -122,6 +93,7 @@ int main(int argc, char** argv) {
     std::vector<DrawDetails> drawDetails;
     drawDetails.reserve(1);
     {
+
         std::vector<Vertex> trianglePoints;
         trianglePoints.reserve(5);
         trianglePoints.emplace_back( 0.5f, -0.5f, 0.0f, 150,  50,  20, 255);
@@ -132,55 +104,60 @@ int main(int argc, char** argv) {
 
         std::vector<unsigned int> triangleMesh = {0, 1, 2, 0, 1, 3, 4, 3, 1};
 
-        drawDetails.emplace_back(uploadMesh(trianglePoints, triangleMesh));
+        VertexArray vao;
+        VertexBuffer vb(trianglePoints.data(), trianglePoints.size() * sizeof(Vertex));
+        VertexBufferLayout layout;
+        Vertex::registerLayout(layout);
+        vao.addBuffer(vb, layout);
+
+        IndexBuffer ib(triangleMesh.data(), triangleMesh.size());
+
+        Shader shader("res/shaders/basiccolor.shader");
+        shader.unbind();
+        Shader shader2("res/shaders/basic.shader");
+        shader2.unbind();
+        Shader shader3("res/shaders/basicuniform.shader");
+        shader3.unbind();
+
+        float r, g, b, a;
+        r = 1.0f;
+        g = 0.1f;
+        b = 0.1f;
+        a = 1.0f;
+        float incr = 0.002f;
+
+        vao.unbind();
+        vb.unbind();
+        ib.unbind();
+        shader3.unbind();
+        Renderer renderer;
+
+        // Loop until the user closes the window
+        while (!glfwWindowShouldClose(window)) {
+            processInput(window);
+
+            // red += 0.02f;
+            // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
+            // trianglePoints[0].pos[0] += fmod((trianglePoints[0].pos[0] + 0.02f), 1);
+            // updateBuffer(vert, 0, drawDetails.at(0) );
+
+            // clear screen. specify what to clear using defined clear color
+            renderer.clear();
+            shader3.bind();
+            shader3.setUniform4f("u_Color", r, g, b, a);
+
+            // Render here
+            renderer.draw(vao, ib, shader3);
+
+            r = fmod(r + incr, 1.0f);
+
+            // Swap front and back buffers
+            glfwSwapBuffers(window);
+
+            // Poll for and process events
+            glfwPollEvents();
+        }
     }
-
-
-    // ShaderProgramSource source = parseShader("res/shaders/basiccolor.shader");
-    // ShaderProgramSource source = parseShader("res/shaders/basic.shader");
-    ShaderProgramSource source = parseShader("res/shaders/basicuniform.shader");
-    std::cout << "Vertex..." << std::endl;
-    std::cout << source.vertexSource << std::endl;
-    std::cout << "Fragment..." << std::endl;
-    std::cout << source.fragmentSource << std::endl;
-
-    unsigned int shader = createShader(source.vertexSource, source.fragmentSource);
-    if (!shader) {
-        std::cout << "Could not compile shader" << std::endl;
-        std::cin.get();
-        return -1;
-    }
-    glUseProgram(shader);
-    int uniforrmLocation = glGetUniformLocation(shader, "u_Color");
-    if (uniforrmLocation == -1) {
-        std::cout << "Uniform not found" << std::endl;
-    }
-    glUniform4f(uniforrmLocation, 1.0, 0.8, 0.25, 1.0);
-
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(window)) {
-        processInput(window);
-
-        // red += 0.02f;
-        // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
-        // vert.pos[0] += fmod((vert.pos[0] + 0.02f), 1);
-        // updateBuffer(vert, 0, drawDetails.at(0) );
-
-        // clear screen. specify what to clear using defined clear color
-        glClear(GL_COLOR_BUFFER_BIT);
-        // Render here
-        draw(drawDetails);
-
-        // Swap front and back buffers
-        glfwSwapBuffers(window);
-
-        // Poll for and process events
-        glfwPollEvents();
-    }
-
-    // not strictly neccessary here because programm cleans up after termination
-    unloadMesh(drawDetails);
-    glDeleteProgram(shader);
 
     glfwTerminate();
 

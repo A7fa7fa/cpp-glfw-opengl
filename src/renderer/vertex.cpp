@@ -1,5 +1,7 @@
 #include "vertex.h"
 #include <iostream>
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 Vertex::Vertex(float x, float y, float z) {
     this->pos[0] = x;
@@ -34,6 +36,10 @@ void Vertex::setColor(unsigned char r, unsigned char g, unsigned char b, unsigne
     this->color[3] = a / 255.0;
 }
 
+void Vertex::registerLayout(VertexBufferLayout& layout) {
+    layout.push(GL_FLOAT, sizeof(Vertex::pos)/sizeof(Vertex::pos[0]));
+    layout.push(GL_FLOAT, sizeof(Vertex::color)/sizeof(Vertex::color[0]));
+}
 
 DrawDetails::DrawDetails(unsigned int vao, unsigned int vbo, unsigned int e) {
     this->vao = vao;
