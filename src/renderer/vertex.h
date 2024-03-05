@@ -1,5 +1,8 @@
 #pragma once
 #include <stdint.h>
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexBufferLayout.h"
 
 class Vertex {
     public:
@@ -11,6 +14,7 @@ class Vertex {
         Vertex();
         Vertex(const Vertex& vertex);
         void setColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+        static void registerLayout(VertexBufferLayout& layout);
 };
 
 class DrawDetails {
