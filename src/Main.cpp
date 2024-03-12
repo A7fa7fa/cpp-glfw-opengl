@@ -4,6 +4,7 @@
 #include <sstream>
 #include "renderer/Renderer.h"
 #include "renderer/shader.h"
+#include "renderer/Texture.h"
 
 void initConsole() {
     // Allocate a new console
@@ -90,19 +91,25 @@ int main(int argc, char** argv) {
 
     float red = 0.02f;
 
-    std::vector<DrawDetails> drawDetails;
-    drawDetails.reserve(1);
+    glfwSwapInterval(1);
+
     {
 
         std::vector<Vertex> trianglePoints;
-        trianglePoints.reserve(5);
-        trianglePoints.emplace_back( 0.5f, -0.5f, 0.0f, 150,  50,  20, 255);
-        trianglePoints.emplace_back(-0.5f, -0.5f, 0.0f,   0, 255,   0, 255);
-        trianglePoints.emplace_back( 0.0f,  0.5f, 0.0f,   0,   0, 255, 255);
-        trianglePoints.emplace_back( 1.0f, -1.0f, 0.0f, 255,   0,   0, 255);
-        trianglePoints.emplace_back(-1.0f, -1.0f, 0.0f,   0,   0,   0, 255);
+        trianglePoints.reserve(4);
+        trianglePoints.emplace_back( 0.5f,  0.5f, 0.0f,   0,   0,   0, 255, 1.0f, 1.0f); //top right
+        trianglePoints.emplace_back( 0.5f, -0.5f, 0.0f,   0, 255,   0, 255, 1.0f, 0.0f); //bottom right
+        trianglePoints.emplace_back(-0.5f, -0.5f, 0.0f,   0,   0, 255, 255, 0.0f, 0.0f); //bottom left
+        trianglePoints.emplace_back(-0.5f,  0.5f, 0.0f, 255,   0,   0, 255, 0.0f, 1.0f); //top left
 
-        std::vector<unsigned int> triangleMesh = {0, 1, 2, 0, 1, 3, 4, 3, 1};
+        std::vector<unsigned int> triangleMesh = {2, 3, 0, 0, 2, 1};
+
+
+        // enabling blending
+        GLCall(glEnable(GL_BLEND));
+        // define blending function -> how alpa channel should blend pixxel colors
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA))
+
 
         VertexArray vao;
         VertexBuffer vb(trianglePoints.data(), trianglePoints.size() * sizeof(Vertex));
@@ -118,6 +125,13 @@ int main(int argc, char** argv) {
         shader2.unbind();
         Shader shader3("res/shaders/basicuniform.shader");
         shader3.unbind();
+        Shader shaderTexture("res/shaders/basictexture.shader");
+        shaderTexture.unbind();
+
+        Texture texture("res/textures/test.png");
+        texture.bind(0);
+        shaderTexture.bind();
+        shaderTexture.setUniform1i("u_Texture", 0); // set uniform to textture slot
 
         float r, g, b, a;
         r = 1.0f;
@@ -132,22 +146,34 @@ int main(int argc, char** argv) {
         shader3.unbind();
         Renderer renderer;
 
+        int counter = 0;
+
         // Loop until the user closes the window
         while (!glfwWindowShouldClose(window)) {
             processInput(window);
 
             // red += 0.02f;
             // glClearColor(fmod(red, 1), 0.3f, 1.0f, 0.0f);
-            // trianglePoints[0].pos[0] += fmod((trianglePoints[0].pos[0] + 0.02f), 1);
+            trianglePoints[0].pos.x = fmod(trianglePoints[0].pos.x + 0.00001f, 1.0);
+            //  fmod((trianglePoints[0].pos[0] + 0.02f), 1);
+            vb.bind();
+            vb.updateData(trianglePoints.data(), trianglePoints.size() * sizeof(Vertex) );
             // updateBuffer(vert, 0, drawDetails.at(0) );
 
             // clear screen. specify what to clear using defined clear color
             renderer.clear();
             shader3.bind();
             shader3.setUniform4f("u_Color", r, g, b, a);
+            shaderTexture.bind();
+            shaderTexture.setUniform4f("u_Color", r, g, b, a);
 
             // Render here
-            renderer.draw(vao, ib, shader3);
+            if (counter > 1000) {
+                renderer.draw(vao, ib, shaderTexture);
+            } else {
+                renderer.draw(vao, ib, shader3);
+            }
+            counter++;
 
             r = fmod(r + incr, 1.0f);
 

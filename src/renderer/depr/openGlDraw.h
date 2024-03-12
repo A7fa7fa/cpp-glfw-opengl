@@ -1,5 +1,5 @@
 #pragma once
 #include <vector>
-#include "../vertex.h"
+#include "drawdetails.h"
 
 void draw(const std::vector<DrawDetails>& details);

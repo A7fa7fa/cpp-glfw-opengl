@@ -1,4 +1,5 @@
 #pragma once
+#include "drawdetails.h"
 #include "../vertex.h"
 #include <vector>
 #include <string>

@@ -8,16 +8,22 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size) {
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, rendererId));
     // uploads vertex data to GPU.
     // type of buffer, size in memory of verts data, pointer to start of data same as (&verticis[0]), draw mode -> we dont change the data after uploading so static draw
-    GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    // GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 VertexBuffer::~VertexBuffer() {
     GLCall(glDeleteBuffers(1, &rendererId));
 }
 
+void VertexBuffer::updateData(const void* data, unsigned int size) const {
+    GLCall(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
+}
+
 void VertexBuffer::bind() const {
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, rendererId));
 }
+
 void VertexBuffer::unbind() const {
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

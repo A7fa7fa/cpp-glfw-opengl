@@ -7,6 +7,7 @@ set outDir=bin
 set outname=main.exe
 set sourceDir=src
 set dependendyDir=dependencies
+set vendorDir=vendor
 
 rem Check if an argument is provided
 if "%~1"=="" (
@@ -27,6 +28,9 @@ set files=
 for /R "%sourceDir%" %%F in (*.cpp) do (
     set "files=!files! "%%F""
 )
+for /R "%vendorDir%" %%F in (*.cpp) do (
+    set "files=!files! "%%F""
+)
 
 set options=
 
@@ -34,11 +38,14 @@ if "%mode%"=="debug" (
     set options=-fdiagnostics-color=always -g -Og
 )
 
+echo Ready to start compiling.
+
 g++ ^
     %options% ^
     !files! ^
     -o %outDir%\%mode%\%outname% ^
     -I%dependendyDir%/include ^
+    -I%vendorDir% ^
     -L%dependendyDir%/lib ^
     -lopengl32 ^
     -lglew-2-1-0/glew32 ^

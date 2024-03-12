@@ -2,7 +2,6 @@
 #include <sstream>
 #include <iostream>
 #include "shader.h"
-#include "Renderer.h"
 
 Shader::Shader(const std::string& filepath)
     : filepath(filepath), rendererId(0) {
@@ -83,12 +82,17 @@ unsigned int Shader::compileShader(unsigned int type, const std::string& source)
 void Shader::bind() const {
     GLCall(glUseProgram(rendererId));
 }
+
 void Shader::unbind() const  {
     GLCall(glUseProgram(0));
 }
 
 void Shader::setUniform4f(const std::string& name, float v0, float v1, float v2, float  v3) {
     GLCall(glUniform4f(getUniformLocation(name), v0, v1, v2, v3));
+}
+
+void Shader::setUniform1i(const std::string& name, int value) {
+    GLCall(glUniform1i(getUniformLocation(name), value));
 }
 
 void Shader::setUniform1f(const std::string& name, float value) {

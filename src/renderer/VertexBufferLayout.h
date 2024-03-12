@@ -22,7 +22,6 @@ struct VertexBufferLayoutElement
     }
 };
 
-
 class VertexBufferLayout {
 
     private:
