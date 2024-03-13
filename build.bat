@@ -7,7 +7,7 @@ set outDir=bin
 set outname=main.exe
 set sourceDir=src
 set dependendyDir=dependencies
-set vendorDir=vendor
+set vendorDir=%sourceDir%/vendor
 
 rem Check if an argument is provided
 if "%~1"=="" (
@@ -26,9 +26,6 @@ del /q %outDir%\debug\%outname% 2>nul
 rem find all cpp recusive in sorce dir
 set files=
 for /R "%sourceDir%" %%F in (*.cpp) do (
-    set "files=!files! "%%F""
-)
-for /R "%vendorDir%" %%F in (*.cpp) do (
     set "files=!files! "%%F""
 )
 

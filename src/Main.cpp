@@ -5,6 +5,8 @@
 #include "renderer/Renderer.h"
 #include "renderer/shader.h"
 #include "renderer/Texture.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 void initConsole() {
     // Allocate a new console
@@ -91,7 +93,7 @@ int main(int argc, char** argv) {
 
     float red = 0.02f;
 
-    glfwSwapInterval(1);
+    // glfwSwapInterval(1);
 
     {
 
@@ -132,6 +134,9 @@ int main(int argc, char** argv) {
         texture.bind(0);
         shaderTexture.bind();
         shaderTexture.setUniform1i("u_Texture", 0); // set uniform to textture slot
+
+        glm::mat4 projectionMat = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f); // 4*3 aspect ratio
+        shaderTexture.setUniformMat4f("u_MVP", projectionMat);
 
         float r, g, b, a;
         r = 1.0f;
