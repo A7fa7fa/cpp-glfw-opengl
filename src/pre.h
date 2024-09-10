@@ -7,7 +7,8 @@
 #include <GLFW/glfw3.h>
 
 #include "callback.h"
-#include "renderer/openGlLoader.h"
-#include "renderer/openGlDraw.h"
 #include "renderer/vertex.h"
+#include "renderer/VertexArray.h"
+#include "renderer/VertexBufferLayout.h"
+#include "renderer/VertexBuffer.h"
 #include "input.h"
